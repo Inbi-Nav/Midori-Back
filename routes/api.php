@@ -11,7 +11,8 @@ use App\Http\Controllers\AdminController;
 
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-
+    
+    Route::middleware('auth:api')->group(function () {  
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/products', [ProductController::class, 'index']);
