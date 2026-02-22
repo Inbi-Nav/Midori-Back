@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Services\OrderService;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -19,38 +20,60 @@ class OrderController extends Controller
          );
     }
 
-    public function store(Request $request) {
-
-        $orders = Order::create([
-            'user_id' => $request->user()->id,
-            'total_amount' => 0,
-            'status' => 'pending',
+    public function store(Request $request, OrderService $orderService) {
+        $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        return response()-> json ($orders, 201);
+        $order = $orderService->createOrder($request->user(), $request->items);
+
+        return response()->json($order, 201);
     }
 
+    public function updateStatus(Request $request, Order $order) {
+        $request->validate([
+            'status' => 'required|string|in:processing,shipped,delivered'
+        ]);
 
-    public function updateStatus(Request $request, $id) {
-        $order = Order::find($id);
+        $user = $request->user();
 
-        if (!$order) {
-            return response()->json(['message' => 'Pedido no encontrado'], 404);
+        if ($user->role !== 'provider') {
+            return response()->json([
+                'message' => 'Only providers can update order status'
+            ], 403);
         }
-        $order->status = $request->status;
-        $order->save();
 
-        return response()->json($order);
+        if (in_array($order->status, ['delivered', 'cancelled'])) {
+            return response()->json([
+                'message' => 'Order cannot be modified'
+            ], 400);
+        }
+
+        $order->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json(
+            $order->load('user', 'items.product')
+        );
     }
 
-    public function destroy($id) {
-        $orders = Order::find($id);
-        if ($orders) {
-            $orders->delete();
-            return response()-> json (['message' => 'pedido eliminado']);
-        } else {
-            return response()-> json (['message' => 'pedido no encontrado'], 404);
+    public function cancel(Request $request, Order $order, OrderService $orderService)
+    {
+        try {
+            $order = $orderService->cancelOrder($order, $request->user());
+            return response()->json($order);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
         }
     }
 
+    public function destroy(Order $order) {
+    $order->delete();
+    return response()->json(['message' => 'Pedido eliminado']);
+    }
 }

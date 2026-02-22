@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     public function index() {
@@ -35,7 +35,49 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    public function me(Request $request) {
+    return response()->json($request->user());
+    }
     
+    public function updateMe(Request $request) {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update($request->only(['name', 'email']));
+
+        return response()->json([
+            'message' => 'Perfil actualizado correctamente',
+            'user' => $user
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+    
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+    
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'La contraseña actual no es correcta'
+            ], 400);
+        }
+    
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+    
+        return response()->json([
+            'message' => 'Contraseña actualizada correctamente'
+        ]);
+    }
+
     public function destroy($id) {
         $user = User::find($id);
 

@@ -27,7 +27,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string',
             'price' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
         $imagePath = null;
@@ -38,9 +38,8 @@ class ProductController extends Controller
 
             $filename = time() . '_' . $image->getClientOriginalName();
 
-            $image->move(public_path('imagesproducts'), $filename);
-
-            $imagePath = '/imagesproducts/' . $filename;
+            $image->move(public_path('images/products'), $filename);
+            $imagePath = '/images/products/' . $filename;
         }
 
         $product = Product::create([
@@ -73,9 +72,9 @@ class ProductController extends Controller
 
             $filename = time() . '_' . $image->getClientOriginalName();
 
-            $image->move(public_path('imagesproducts'), $filename);
+            $image->move(public_path('images/products'), $filename);
 
-            $imagePath = '/imagesproducts/' . $filename;
+            $imagePath = '/images/products/' . $filename;
         }
 
         $product->update([
