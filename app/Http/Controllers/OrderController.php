@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
-use App\Models\Order;
 
 class OrderController extends Controller
 {
@@ -36,17 +37,17 @@ class OrderController extends Controller
             'status' => 'required|string'
         ]);
 
+        $newStatus = $request->status;
+
         $allowedTransitions = [
-            'pending' => ['processing', 'cancelled'],
+            'pending' => ['processing'],
             'processing' => ['shipped'],
             'shipped' => ['delivered'],
         ];
 
-        $newStatus = $request->status;
-
         if (!in_array($newStatus, $allowedTransitions[$order->status] ?? [])) {
             return response()->json([
-                'message' => 'Cambio de estado no permitido'
+                'message' => 'Invalid status transition'
             ], 400);
         }
 
@@ -55,10 +56,10 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    public function cancel(Order $order, Request $request, OrderService $orderService) {
+    public function cancel(Request $request, Order $order, OrderService $orderService)
+    {
         try {
             $order = $orderService->cancelOrder($order, $request->user());
-    
             return response()->json($order);
         } catch (\Exception $e) {
             return response()->json([

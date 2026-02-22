@@ -47,14 +47,13 @@ class OrderService
         });
     }
 
-    public function cancelOrder(Order $order, $user) {
-        
+   public function cancelOrder(Order $order, $user) {
         if ($order->user_id !== $user->id) {
-            throw new \Exception("No autorizado");
+            throw new \Exception("Unauthorized");
         }
 
-        if ($order->status !== 'pending') {
-            throw new \Exception("Solo se pueden cancelar pedidos pendientes");
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            throw new \Exception("Order cannot be cancelled");
         }
 
         foreach ($order->items as $item) {
