@@ -27,9 +27,10 @@ use App\Http\Controllers\AdminController;
 
 
     Route::middleware('role:client')->group(function () {
-
+        
         Route::post('/orders', [OrderController::class, 'store']);
         Route::get('/orders/me', [OrderController::class, 'myOrders']);
+        Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel']);
         Route::post('/payments', [PaymentController::class, 'store']);
         Route::post('/users/request-provider', [UserController::class, 'requestProvider']);
     });

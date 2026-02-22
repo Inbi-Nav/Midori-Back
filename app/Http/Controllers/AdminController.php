@@ -2,23 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Product;
-use App\Models\Payment;
-use App\Models\user;
-use App\Models\Order;
-
+use App\Services\AdminService;
 
 class AdminController extends Controller
 {
-    public function stats() {
-         return response()->json([
-            'users_total' => User::count(),
-            'providers_total' => User::where('role', 'provider')->count(),
-            'products_total' => Product::count(),
-            'orders_total' => Order::count(),
-            'payments_total' => Payment::count(),
-            'total_revenue' => Payment::sum('amount'),
-       ]);
+    protected $adminService;
+
+    public function __construct(AdminService $adminService)
+    {
+        $this->adminService = $adminService;
+    }
+
+    public function stats()
+    {
+        $stats = $this->adminService->getStats();
+
+        return response()->json($stats);
     }
 }
