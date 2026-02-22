@@ -12,12 +12,13 @@ use App\Http\Controllers\AdminController;
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 
-    Route::middleware('auth:api')->group(function () {
-  
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::get('/users/me', [UserController::class, 'me'])->middleware('auth:api');
+    Route::put('/users/me', [UserController::class, 'updateMe'])->middleware('auth:api');
+    Route::patch('/users/me/password', [UserController::class, 'changePassword'])->middleware('auth:api');
 
     Route::post('/orders', [OrderController::class, 'store'])
         ->middleware('role:client');
