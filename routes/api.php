@@ -43,8 +43,7 @@ use App\Http\Controllers\AdminController;
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
         Route::get('/orders', [OrderController::class, 'index']);
-        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
-
+        Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{id}', [CategoryController::class, 'update']);
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
