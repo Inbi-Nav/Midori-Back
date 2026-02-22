@@ -34,26 +34,30 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order) {
         $request->validate([
-            'status' => 'required|string'
+            'status' => 'required|string|in:processing,shipped,delivered'
         ]);
 
-        $newStatus = $request->status;
+        $user = $request->user();
 
-        $allowedTransitions = [
-            'pending' => ['processing'],
-            'processing' => ['shipped'],
-            'shipped' => ['delivered'],
-        ];
-
-        if (!in_array($newStatus, $allowedTransitions[$order->status] ?? [])) {
+        if ($user->role !== 'provider') {
             return response()->json([
-                'message' => 'Invalid status transition'
+                'message' => 'Only providers can update order status'
+            ], 403);
+        }
+
+        if (in_array($order->status, ['delivered', 'cancelled'])) {
+            return response()->json([
+                'message' => 'Order cannot be modified'
             ], 400);
         }
 
-        $order->update(['status' => $newStatus]);
+        $order->update([
+            'status' => $request->status
+        ]);
 
-        return response()->json($order);
+        return response()->json(
+            $order->load('user', 'items.product')
+        );
     }
 
     public function cancel(Request $request, Order $order, OrderService $orderService)
@@ -68,14 +72,8 @@ class OrderController extends Controller
         }
     }
 
-    public function destroy($id) {
-        $orders = Order::find($id);
-        if ($orders) {
-            $orders->delete();
-            return response()-> json (['message' => 'pedido eliminado']);
-        } else {
-            return response()-> json (['message' => 'pedido no encontrado'], 404);
-        }
+    public function destroy(Order $order) {
+    $order->delete();
+    return response()->json(['message' => 'Pedido eliminado']);
     }
-
 }

@@ -47,7 +47,11 @@ class OrderService
         });
     }
 
-   public function cancelOrder(Order $order, $user) {
+  public function cancelOrder(Order $order, $user) {
+        if ($user->role !== 'client') {
+            throw new \Exception("Only clients can cancel orders");
+        }
+
         if ($order->user_id !== $user->id) {
             throw new \Exception("Unauthorized");
         }
