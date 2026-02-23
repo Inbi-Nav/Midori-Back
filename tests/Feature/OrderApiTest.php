@@ -15,13 +15,13 @@ class OrderApiTest extends TestCase
 
     public function test_client_can_create_order()
     {
-        $client = User::factory()->create(['role' => 'client']);
+        $client = User::Factory()->create(['role' => 'client']);
+        $product = Product::factory()->create(['stock'=> 5]);
+
         Passport::actingAs($client);
 
-        $product = Product::factory()->create();
-
         $response = $this->postJson('/api/orders', [
-            'products' => [
+            'items'=> [
                 [
                     'product_id' => $product->id,
                     'quantity' => 2
@@ -29,7 +29,10 @@ class OrderApiTest extends TestCase
             ]
         ]);
 
-        $response->assertStatus(201);
+        $response-> assertStatus(201)
+            ->assertJsonFragment([
+            'product_id' => $product->id,
+        ]);
     }
 
     public function test_provider_cannot_create_order()
