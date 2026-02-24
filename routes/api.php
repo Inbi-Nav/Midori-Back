@@ -60,6 +60,7 @@ use App\Http\Controllers\AdminController;
         Route::get('/provider-request', [UserController::class, 'providerRequests']);
         Route::patch('/users/{id}/approve-provider', [UserController::class, 'approveProvider']);
         Route::get('/orders', [AdminController::class, 'orders']);
+        Route::patch('/users/{id}/decline-provider', [UserController::class, 'declineProvider']);
 
         Route::get('/stats', [AdminController::class, 'stats']);
     });

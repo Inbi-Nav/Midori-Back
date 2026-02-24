@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+
 class UserController extends Controller
 {
     public function index() {
@@ -125,4 +126,20 @@ class UserController extends Controller
         return response()->json(['message' => 'Usuario aprobado como proveedor', 'user' => $user]);
     }
 
+    public function declineProvider($id) {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        if (!$user->provider_request) {
+            return response()->json(['message' => 'El usuario no tiene una solicitud pendiente'], 400);
+        }
+
+        $user->provider_request = false;
+        $user->save();
+
+        return response()->json(['message' => 'Solicitud de proveedor rechazada correctamente']);
+    }
 }
