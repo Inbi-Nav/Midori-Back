@@ -8,16 +8,35 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index() {
+    public function index(Request $request)
+    {
+        $user = $request->user();
 
-        return response()-> json(Order::with('user')->get());
+        if ($user->role === 'admin') {
+            return response()->json(Order::with('user')->get());
+        }
+
+        if ($user->role === 'provider') {
+            $orders = Order::whereHas('items.product', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->with('user')->get();
+
+            return response()->json($orders);
+        }
+
+        return response()->json(['message' => 'No autorizado'], 403);
     }
 
-    public function myOrders(Request $request) {
+    public function myOrders(Request $request)
+    {
+        $user = $request->user();
+        
+        $orders = Order::where('user_id', $user->id)
+            ->with('items.product') 
+            ->latest()
+            ->get();
 
-         return response()->json (
-            $request->user()->orders()->with('items')->get()
-         );
+        return response()->json($orders);
     }
 
     public function store(Request $request, OrderService $orderService) {
@@ -73,7 +92,7 @@ class OrderController extends Controller
     }
 
     public function destroy(Order $order) {
-    $order->delete();
-    return response()->json(['message' => 'Pedido eliminado']);
+        $order->delete();
+        return response()->json(['message' => 'Pedido eliminado']);
     }
 }
