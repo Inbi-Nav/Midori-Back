@@ -27,6 +27,18 @@ class OrderController extends Controller
         return response()->json(['message' => 'No autorizado'], 403);
     }
 
+    public function myOrders(Request $request)
+    {
+        $user = $request->user();
+        
+        $orders = Order::where('user_id', $user->id)
+            ->with('items.product') 
+            ->latest()
+            ->get();
+
+        return response()->json($orders);
+    }
+
     public function store(Request $request, OrderService $orderService) {
         $request->validate([
             'items' => 'required|array|min:1',
@@ -80,7 +92,7 @@ class OrderController extends Controller
     }
 
     public function destroy(Order $order) {
-    $order->delete();
-    return response()->json(['message' => 'Pedido eliminado']);
+        $order->delete();
+        return response()->json(['message' => 'Pedido eliminado']);
     }
 }
