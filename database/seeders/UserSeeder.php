@@ -21,5 +21,21 @@ class UserSeeder extends Seeder
             'password' => Hash::make('midori2026'),
             'email_verified_at' => now(),
         ]);
+
+        User::create([
+            'name' => 'Sara Garcia',
+            'email' => 'Sara@gmail.com',
+            'role' => 'client',
+            'password' => Hash::make('Sara1234'),
+            'email_verified_at' => now(),
+        ]);
+
+        User::create([
+            'name' => 'Inbi',
+            'email' => 'inbi@midori.com',
+            'role' => 'provider',
+            'password' => Hash::make('12345678'),
+            'email_verified_at' => now(),
+        ]);
     }
 }
