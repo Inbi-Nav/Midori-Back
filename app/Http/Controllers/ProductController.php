@@ -13,7 +13,6 @@ class ProductController extends Controller
     }
 
     public function show($id) {
-
         $product = Product::find($id);
 
         if($product) {
@@ -33,14 +32,13 @@ class ProductController extends Controller
         $imagePath = null;
 
         if ($request->hasFile('image')) {
-
             $image = $request->file('image');
-
             $filename = time() . '_' . $image->getClientOriginalName();
-
             $image->move(public_path('images/products'), $filename);
             $imagePath = '/images/products/' . $filename;
         }
+
+        $user = $request->user();
 
         $product = Product::create([
             'name' => $request->name,
@@ -51,11 +49,11 @@ class ProductController extends Controller
             'color' => $request->color,
             'category_id' => $request->category_id,
             'image_url' => $imagePath,
+            'user_id' => $user->id, 
         ]);
 
         return response()->json($product, 201);
     }
-
 
    public function update(Request $request, $id){
         $product = Product::find($id);
@@ -64,16 +62,17 @@ class ProductController extends Controller
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
 
+        $user = $request->user();
+        if ($product->user_id !== $user->id && $user->role !== 'admin') {
+            return response()->json(['message' => 'No autorizado para editar este producto'], 403);
+        }
+
         $imagePath = $product->image_url;
 
         if ($request->hasFile('image')) {
-
             $image = $request->file('image');
-
             $filename = time() . '_' . $image->getClientOriginalName();
-
             $image->move(public_path('images/products'), $filename);
-
             $imagePath = '/images/products/' . $filename;
         }
 
@@ -96,8 +95,12 @@ class ProductController extends Controller
             return response()-> json (['message' => 'Producto no encontrado'], 404);
         }
 
-        $product ->delete();
-        return response()-> json(['message' => 'Producto eliminado']);
+        $user = request()->user();
+        if ($product->user_id !== $user->id && $user->role !== 'admin') {
+            return response()->json(['message' => 'No autorizado para eliminar este producto'], 403);
+        }
+
+        $product->delete();
+        return response()->json(['message' => 'Producto eliminado']);
     }
 }
-

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Services\AdminService;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -37,4 +38,13 @@ class AdminController extends Controller
         
         return response()->json($order);
     }
+
+    public function products()
+    {
+        $products = Product::with('user')
+            ->get();
+        
+        return response()->json($products);
+    }
+
 }
