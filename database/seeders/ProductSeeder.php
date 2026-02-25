@@ -9,7 +9,8 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        Product::insert([
+      
+        $products = [
 
             [
               "name"=> "Incense Holder",
@@ -411,6 +412,10 @@ class ProductSeeder extends Seeder
               "image_url"=> "images/products/funko-4.png",
               "category_id"=> 5
             ],          
-        ]);
+        ];
+        foreach ($products as $product) {
+        Product::create(array_merge($product, ['user_id' => 3]));
     }
+        $this->command->info('Productos creados y asignados al proveedor ID 3');
+  }
 }
