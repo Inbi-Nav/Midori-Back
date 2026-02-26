@@ -7,8 +7,12 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    netcat-openbsd \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip gd
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -16,8 +20,13 @@ WORKDIR /var/www
 
 COPY . .
 
-RUN composer install
+RUN composer install --no-interaction --optimize-autoloader
+
+RUN php artisan key:generate
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8000
 
-CMD php artisan serve --host=0.0.0.0 --port=8000
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

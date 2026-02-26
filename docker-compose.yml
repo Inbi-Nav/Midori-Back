@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   app:
     build:
       context: .
@@ -9,24 +8,41 @@ services:
     container_name: midori_app
     volumes:
       - .:/var/www
+      - /var/www/vendor 
     ports:
       - "8000:8000"
     depends_on:
       - mysql
     networks:
       - midori_network
+    env_file:
+      - .env.docker
+    environment:
+      - DB_HOST=mysql 
+      - DB_PORT=3306
+      - DB_DATABASE=midori
+      - DB_USERNAME=midori        
+      - DB_PASSWORD=midori        
 
   mysql:
     image: mysql:8.0
     container_name: midori_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: Admin_1234     
       MYSQL_DATABASE: midori
       MYSQL_USER: midori
-      MYSQL_PASSWORD: midori
+      MYSQL_PASSWORD: midori               
+    ports:
+      - "3307:3306" 
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
       - midori_network
+    command: --default-authentication-plugin=mysql_native_password
 
 networks:
   midori_network:
+
+volumes:
+  mysql_data:
