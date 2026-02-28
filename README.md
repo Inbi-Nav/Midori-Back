@@ -1,176 +1,187 @@
-# REST API – Sistema de Gestión E-commerce (Midori)
-Esta API REST implementa un sistema de gestión para Midori con control de
-  - usuarios 
-  - productos
-  - pedidos
-  - pagos
+#  Midori Backend – E-commerce API REST
 
-La autenticación se realiza mediante Bearer Tokens (OAuth2).
-
-## Requisitos
-
-- PHP - 8.2
-- Composer
-- Laravel 12
-- SQLite 
-- Laravel Passport
+REST API for the Midori e-commerce management system, built with Laravel 12 + PHP 8.2. Handles users, products, orders, and payments with OAuth2 authentication via Laravel Passport.
 ---
-##  Cómo iniciar el proyecto
 
-  - Clonar el repositorio:
-  - git clone **url-repo**
-  - cd Midori-Back
-  - composer install
-  - cp .env.example .env
-  - php artisan key:generate
-  - CREATE DATABASE midori o New-Item database/database.sqlite -ItemType File
-  - php artisan migrate:fresh --seed
-  <!-- - php artisan passport:keys -->
-  - php artisan passport:install
-  - php artisan passport:client --personal
-  - php artisan serve 
+##  Technologies used
 
-## HTTP HEADERS
-- Accept: application/json
-- Content-Type: application/json
-
-
-# Ejecutar proyecto con Docker
-
-## Requisitos
-- Docker 
-- Docker Compose 
-(No es necesario instalar PHP ni Composer en tu máquina)
-
-En caso de error de permisos
-- app chmod 600 storage/oauth-public.key
-
-##  Cómo iniciar el proyecto
-
-- git clone url-repo
-- docker compose build
-- docker compose up 
-
-Aplicación Laravel (puerto 8000)
-
-MySQL 8 
-
-## Ejecutar los test:
-- php artisan test
-
-Incluye tests funcionales para:
-
-  - Autenticación
-
-  - Roles
-
-  - Productos
-
-  - Pedidos
-
-  - Administración
-
+| Category       | Technology                              |
+|----------------|------------------------------------------|
+| Framework      | Laravel 12                               |
+| Language       | PHP 8.2                                  |
+| Database       | SQLite (local) / MySQL 8 (Docker)        |
+| Authentication | Laravel Passport (OAuth2 Bearer Tokens)  |
+| Testing        | PHPUnit                                  |
+| API Docs       | Laravel Scribe                           |
+| Containers     | Docker + Docker Compose                  |
 ---
-## Credenciales de administrador 
- - **email**: admin@midori.com
- - **password**: midori2026
 
- ## Registro
-Al registrarse por primera vez, el usuario obtiene el rol CLIENT por defecto.
-  - **POST - /api/register**
-- Campos obligatorios 
-  - **name, email, password** 
+##  Local Setup
+```bash
 
-  ## Login
-- Una vez registrado correctamente, el usuario puede autenticarse. 
-    - **POST - /api/login**
- - credenciales 
-    - **email, password** 
+git clone https://github.com/Inbi-Nav/Midori-Back.git
+cd Midori-Back
+composer install
+cp .env.example .env
+php artisan key:generate
+New-Item database/database.sqlite -ItemType File   
+php artisan migrate:fresh --seed
+php artisan passport:install
+php artisan passport:client --personal
+php artisan serve
+```
+---
+##  Docker Setup
+```bash
+git clone https://github.com/Inbi-Nav/Midori-Back.git
+cd Midori-Back
+docker compose build
+docker compose up
+```
 
- ## Roles del sistema
-La API maneja tres tipos de usuarios:
-
- **CLIENTE**
-
- Puede:
-  - Ver productos
-  - Crear pedidos
-  - Realizar pagos
-  - Consultar sus pedidos
-  - Solicitar convertirse en proveedor
+> If you there is OAuth key permission errors:
+> ```bash
+> chmod 600 storage/oauth-public.key
 
 ---
 
-**PROVEEDOR** - Responsable de gestionar productos y pedidos
+##  Required HTTP Headers
+```
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {token}   
+```
+##  Test Credentials
+| Rol    | Email              | Password     |
+|--------|--------------------|--------------|
+| Admin  | admin@midori.com   | midori2026   |
 
-Puede:
-- Crear / modificar / eliminar productos
-- Gestionar categorías
-- Consultar pedidos
-- Cambiar el estado de los pedidos
 
-El proveedor no se crea directamente. Debe ser aprobado por el administrador.
+---
+##  System Roles
+When a user register for the first time they are assigned as **Client** role by default.
+
+###  Client (Regular User)
+- Browse and search products
+- Create orders and make payments
+- View order history and cancel pending orders
+- Request to become a provider
+- Edit profile and change password
+
+###  Provider (Seller)
+- Create, edit, and delete their own products
+- Manage categories
+- View received orders
+- Update order status (`processing` → `shipped` → `delivered`)
+- The provider role is not assigned directly. It must be approved by an administrator.
+
+###  Admin (Administrator)
+- Full system oversight
+- Manage users and roles
+- Approve/decline provider requests
+- View general statistics
 
 ---
 
-**ADMIN** - Usuario con privilegios de supervision
+##  API Endpoints
 
-Puede:
+### Authentication
 
-- Supervisar sistema
-- Aprobar solicitudes de proveedores
-- Consultar estadísticas 
-- Gestionar usuarios
+| Method | Endpoint         | Description                                        | Access  |
+|--------|------------------|----------------------------------------------------|---------|
+| POST   | `/api/register`  | Register a new user (Client role by default)       | Public  |
+| POST   | `/api/login`     | Log in and receive a Bearer Token                  | Public  |
+| POST   | `/api/logout`    | Log out and invalidate token                       | Auth    |
+**Registro** — Campos obligatorios: `name`, `email`, `password`
+**Register** — Required fields: `name`, `email`, `password`
+**Login** — Campos obligatorios: `email`, `password`
+**Login** — Required fields: `email`, `password`
 
-## Solicitar convertirse en proveedor
+---
 
-1. El cliente envía la solicitud:
- - POST /api/users/request-provider
-2. El administrador consulta las solicitudes:
-- GET /api/provider-request
-3. El administrador aprueba la solicitud:
-- PATCH /api/users/{id}/approve-provider 
+### Products
 
-## Endpoints de productos
-- GET /api/products
-- GET /api/products/{id}
-- POST /api/products - (proveedor)
-- PUT /api/products/{id} - (proveedor)
-- DELETE /api/products/{id} - (proveedor)
+| Method | Endpoint              | Description                    | Access   |
+|--------|-----------------------|--------------------------------|----------|
+| GET    | `/api/products`       | List all products              | Public   |
+| GET    | `/api/products/{id}`  | View product details           | Public   |
+| POST   | `/api/products`       | Create a new product           | Provider |
+| PUT    | `/api/products/{id}`  | Update own product             | Provider |
+| DELETE | `/api/products/{id}`  | Delete own product             | Provider |
 
-## Endpoints de pedidos
-- POST /api/orders - (cliente)
-- GET /api/orders/me - (cliente)
-- GET /api/orders - (proveedor)
-- PATCH /api/orders/{id}/status - (proveedor)
+---
 
-## Endpoints de pago
-- POST /api/payments - (cliente)
+### Orders
 
-## Endpoints de administrador
-- GET /api/users 
-- GET /api/users/{id}
-- PUT /api/users/{id}
-- DELETE /api/users/{id}
-- GET /api/provider-request
-- PATCH /api/users/{id}/approve-request
+| Method | Endpoint                    | Description                          | Access   |
+|--------|-----------------------------|--------------------------------------|----------|
+| POST   | `/api/orders`               | Create a new order                   | Client   |
+| GET    | `/api/orders/me`            | View my orders as a client           | Client   |
+| PATCH  | `/api/orders/{id}/cancel`   | Cancel a pending order               | Client   |
+| GET    | `/api/orders`               | View received orders as a provider   | Provider |
+| PATCH  | `/api/orders/{id}/status`   | Update order status                  | Provider |
 
-## SEGURIDAD
-- Todas las rutas protegidas usan auth:api
-- El acceso se restringe por rol mediante middleware
-- La autenticación se basa en **Bearer Tokens**
-- Sin token -> 401
-- Token sin permisos -> 403 
+---
 
-## API Documentation
+### Payments
 
-La documentación completa de la API está disponible mediante Laravel Scribe:
+| Method | Endpoint         | Description              | Access |
+|--------|------------------|--------------------------|--------|
+| POST   | `/api/payments`  | Make a payment for order | Client |
 
-http://localhost:8000/docs
+---
 
-Incluye:
-  - Endpoints
-  - Métodos HTTP
-  - Parámetros
-  - Autenticación
-  - Ejemplos de respuesta
+### User / Profile
+
+| Method | Endpoint                        | Description                                        | Access |
+|--------|---------------------------------|----------------------------------------------------|--------|
+| GET    | `/api/users/me`                 | View authenticated user's profile                  | Auth   |
+| PUT    | `/api/users/me`                 | Update profile (name, email, phone, etc.)          | Auth   |
+| POST   | `/api/users/request-provider`   | Request to become a provider                       | Client |
+
+---
+
+### Administration
+
+| Method | Endpoint                              | Description                            | Access |
+|--------|---------------------------------------|----------------------------------------|--------|
+| GET    | `/api/users`                          | List all users                         | Admin  |
+| GET    | `/api/users/{id}`                     | View user details                      | Admin  |
+| PUT    | `/api/users/{id}`                     | Update user data/role                  | Admin  |
+| DELETE | `/api/users/{id}`                     | Delete a user                          | Admin  |
+| GET    | `/api/provider-request`               | View pending provider requests         | Admin  |
+| PATCH  | `/api/users/{id}/approve-provider`    | Approve provider request               | Admin  |
+| PATCH  | `/api/users/{id}/decline-provider`    | Decline provider request               | Admin  |
+
+---
+
+### Provider Request Flow
+
+1. Client → POST /api/users/request-provider
+2. Admin  → GET  /api/provider-request        (view pending requests)
+3. Admin  → PATCH /api/users/{id}/approve-provider  (approve)
+         → PATCH /api/users/{id}/decline-provider  (decline)
+
+### Run all tests
+php artisan test
+
+### With Docker
+docker exec -it midori-app php artisan test
+
+### Test Includes:
+
+
+```
+- Authentication (register, login, logout)
+- Role-based authorization (client, provider, admin)
+- Product CRUD operations
+- Order management
+- Administration features
+```
+
+
+##  Documentation
+```
+Full API documentation generated with **Laravel Scribe**:
+http://127.0.0.1:8000/docs
+```

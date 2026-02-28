@@ -7,6 +7,9 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 
+/**
+ * @group Categories
+ */
 class CategoryController extends Controller
 {
     public function index()

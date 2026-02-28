@@ -7,6 +7,9 @@ use App\Services\AdminService;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin
+ */
 class AdminController extends Controller
 {
     protected $adminService;

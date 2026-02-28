@@ -9,6 +9,9 @@ use App\Http\Requests\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
 use Illuminate\Http\Request;
 
+/**
+ * @group Orders
+ */
 class OrderController extends Controller
 {
     public function index(Request $request)

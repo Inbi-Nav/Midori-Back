@@ -7,6 +7,9 @@ use Database\Factories\OrderFactory;
 use App\Http\Resources\OrderItemResource;
 use Illuminate\Http\Request;
 
+/**
+ * @group Order Items
+ */
 class OrderItemController extends Controller {
     public function index()
     {

@@ -9,6 +9,9 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use Illuminate\Http\Request;
 
+/**
+ * @group Payments
+ */
 class PaymentController extends Controller
 {
     public function index()
