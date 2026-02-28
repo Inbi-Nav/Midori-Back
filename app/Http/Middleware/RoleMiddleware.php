@@ -11,12 +11,12 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles)
     {
         if (!$request->user()) {
-            return response()->json(['message' => 'No autenticado'], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['message' => 'Not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
         if (!in_array($request->user()->role, $roles)) {
             return response()->json([
-                'message' => 'Acceso denegado. Se requiere uno de estos roles: ' . implode(', ', $roles)
+                'message' => 'Access denied. Requires one of these roles: ' . implode(', ', $roles)
             ], Response::HTTP_FORBIDDEN);
         }
 
