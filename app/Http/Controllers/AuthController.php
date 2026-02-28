@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,12 +18,24 @@ class AuthController extends Controller
     * @bodyParam email string required Email del usuario. Example: juan@example.com
     * @bodyParam password string required Contraseña del usuario. Example: 123456
     */
+
+    public function me(Request $request)
+    {
+        return new UserResource($request->user());
+    }
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+            ],
         ]);
 
         $user = User::create([
@@ -59,7 +71,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Credenciales incorrectas'
+                'message' => 'Invalid credentials'
             ], 401);
         }
 
@@ -86,6 +98,6 @@ class AuthController extends Controller
     {
         $request->user()->token()->revoke();
 
-        return response()->json(['message' => 'Sesión cerrada']);
+        return response()->json(['message' => 'Session closed']);
     }
 }

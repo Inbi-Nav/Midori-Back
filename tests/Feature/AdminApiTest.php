@@ -20,7 +20,8 @@ class AdminApiTest extends TestCase
 
         $response = $this->getJson('/api/users');
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['data']);
     }
 
     public function test_client_cannot_access_admin_routes()
@@ -31,5 +32,15 @@ class AdminApiTest extends TestCase
         $response = $this->getJson('/api/users');
 
         $response->assertStatus(403);
+    }
+
+    public function test_admin_cannot_approve_non_existing_user()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Passport::actingAs($admin);
+
+        $response = $this->patchJson('/api/users/999/approve-provider');
+
+        $response->assertStatus(404);
     }
 }

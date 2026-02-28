@@ -15,8 +15,8 @@ class AuthApiTest extends TestCase
         $response = $this->postJson('/api/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password'
+            'password' => 'Password123',
+            'password_confirmation' => 'Password123'
         ]);
 
         $response->assertStatus(201);
@@ -25,6 +25,18 @@ class AuthApiTest extends TestCase
             'email' => 'test@example.com',
             'role' => 'client'
         ]);
+    }
+
+    public function test_user_cannot_register_with_weak_password()
+    {
+        $response = $this->postJson('/api/register', [
+            'name' => 'Test User',
+            'email' => 'weak@example.com',
+            'password' => '123',
+            'password_confirmation' => '123'
+        ]);
+
+        $response->assertStatus(422);
     }
 
     public function test_user_can_login()
@@ -39,7 +51,8 @@ class AuthApiTest extends TestCase
             'password' => 'password'
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['token', 'user']);
     }
 
     public function test_login_fails_with_wrong_credentials()
