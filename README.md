@@ -73,7 +73,7 @@ Incluye tests funcionales para:
 ---
 ## Credenciales de administrador 
  - **email**: admin@midori.com
- - **password**: admin123
+ - **password**: midori2026
 
  ## Registro
 Al registrarse por primera vez, el usuario obtiene el rol CLIENT por defecto.

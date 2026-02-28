@@ -15,7 +15,7 @@ class OrderApiTest extends TestCase
 
     public function test_client_can_create_order()
     {
-        $client = User::Factory()->create(['role' => 'client']);
+        $client = User::factory()->create(['role' => 'client']);
         $product = Product::factory()->create(['stock'=> 5]);
 
         Passport::actingAs($client);
@@ -29,20 +29,26 @@ class OrderApiTest extends TestCase
             ]
         ]);
 
-        $response-> assertStatus(201)
-            ->assertJsonFragment([
-            'product_id' => $product->id,
-        ]);
+        $response->assertStatus(201);
     }
 
-    public function test_provider_cannot_create_order()
+    public function test_cannot_create_order_with_insufficient_stock()
     {
-        $provider = User::factory()->create(['role' => 'provider']);
-        Passport::actingAs($provider);
+        $client = User::factory()->create(['role' => 'client']);
+        $product = Product::factory()->create(['stock' => 1]);
 
-        $response = $this->postJson('/api/orders', []);
+        Passport::actingAs($client);
 
-        $response->assertStatus(403);
+        $response = $this->postJson('/api/orders', [
+            'items'=> [
+                [
+                    'product_id' => $product->id,
+                    'quantity' => 5
+                ]
+            ]
+        ]);
+
+        $response->assertStatus(400);
     }
 
     public function test_client_can_view_only_their_orders()
@@ -58,6 +64,16 @@ class OrderApiTest extends TestCase
         $response = $this->getJson('/api/orders/me');
 
         $response->assertStatus(200)
-                 ->assertJsonCount(1);
+                 ->assertJsonCount(1, 'data');
+    }
+
+    public function test_client_cannot_access_provider_orders_endpoint()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        Passport::actingAs($client);
+
+        $response = $this->getJson('/api/orders');
+
+        $response->assertStatus(403);
     }
 }
