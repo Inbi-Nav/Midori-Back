@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Http\Resources\PaymentResource;
+use App\Http\Requests\StorePaymentRequest;
+use App\Http\Requests\UpdatePaymentRequest;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -14,20 +16,21 @@ class PaymentController extends Controller
         return PaymentResource::collection(Payment::all());
     }
 
-    public function show($id)
+    public function show(Payment $payment)
     {
-        $payment = Payment::findOrFail($id);
         return new PaymentResource($payment);
     }
 
-    public function store(Request $request)
+    public function store(StorePaymentRequest $request)
     {
         $order = Order::where('id', $request->order_id)
             ->where('user_id', $request->user()->id)
             ->first();
 
         if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
+            return response()->json([
+                'message' => 'Order not found'
+            ], 404);
         }
 
         $payment = Payment::create([
@@ -37,28 +40,33 @@ class PaymentController extends Controller
             'status' => 'paid',
         ]);
 
-        $order->status = 'paid';
-        $order->total_amount = $payment->amount;
-        $order->save();
+        $order->update([
+            'status' => 'processing',
+            'total_amount' => $payment->amount,
+        ]);
 
         return (new PaymentResource($payment))
             ->response()
             ->setStatusCode(201);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePaymentRequest $request, Payment $payment)
     {
-        $payment = Payment::findOrFail($id);
-        $payment->update($request->all());
+        $payment->update($request->validated());
 
         return new PaymentResource($payment);
     }
 
-    public function destroy($id)
+    public function destroy(Payment $payment, Request $request)
     {
-        $payment = Payment::findOrFail($id);
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Not authorized'], 403);
+        }
+
         $payment->delete();
 
-        return response()->json(['message' => 'Payment deleted']);
+        return response()->json([
+            'message' => 'Payment deleted successfully'
+        ]);
     }
 }

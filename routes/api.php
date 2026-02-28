@@ -9,11 +9,10 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AdminController;
 
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-
-    Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:api')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -23,11 +22,11 @@ use App\Http\Controllers\AdminController;
 
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::get('/products/{product}', [ProductController::class, 'show']);
 
-
+    
     Route::middleware('role:client')->group(function () {
-        
+
         Route::post('/orders', [OrderController::class, 'store']);
         Route::get('/orders/me', [OrderController::class, 'myOrders']);
         Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel']);
@@ -36,32 +35,35 @@ use App\Http\Controllers\AdminController;
     });
 
 
+
     Route::middleware('role:provider')->group(function () {
 
         Route::post('/products', [ProductController::class, 'store']);
-        Route::put('/products/{id}', [ProductController::class, 'update']);
-        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+        Route::put('/products/{product}', [ProductController::class, 'update']);
+        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
         Route::get('/orders', [OrderController::class, 'index']);
         Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+
         Route::post('/categories', [CategoryController::class, 'store']);
-        Route::put('/categories/{id}', [CategoryController::class, 'update']);
-        Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+        Route::put('/categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
     });
 
 
     Route::middleware('role:admin')->group(function () {
 
         Route::get('/users', [UserController::class, 'index']);
-        Route::get('/users/{id}', [UserController::class, 'show']);
-        Route::put('/users/{id}', [UserController::class, 'update']);
-        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::get('/users/{user}', [UserController::class, 'show']);
+        Route::put('/users/{user}', [UserController::class, 'update']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
         Route::get('/provider-request', [UserController::class, 'providerRequests']);
-        Route::patch('/users/{id}/approve-provider', [UserController::class, 'approveProvider']);
-        Route::get('/admin/orders', [AdminController::class, 'orders']); 
+        Route::patch('/users/{user}/approve-provider', [UserController::class, 'approveProvider']);
+        Route::patch('/users/{user}/decline-provider', [UserController::class, 'declineProvider']);
+
+        Route::get('/admin/orders', [AdminController::class, 'orders']);
         Route::get('/admin/products', [AdminController::class, 'products']);
-        Route::patch('/users/{id}/decline-provider', [UserController::class, 'declineProvider']);
         Route::get('/stats', [AdminController::class, 'stats']);
     });
 });

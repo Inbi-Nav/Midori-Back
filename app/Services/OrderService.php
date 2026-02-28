@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Order;
@@ -8,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function createOrder($user, array $items)
+    public function createOrder($user, array $items): Order
     {
         return DB::transaction(function () use ($user, $items) {
 
@@ -25,7 +26,7 @@ class OrderService
                 $product = Product::findOrFail($item['product_id']);
 
                 if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Stock insuficiente para {$product->name}");
+                    throw new \Exception("Insufficient stock for product: {$product->name}");
                 }
 
                 $subtotal = $product->price * $item['quantity'];
@@ -41,13 +42,16 @@ class OrderService
                 $product->decrement('stock', $item['quantity']);
             }
 
-            $order->update(['total_amount' => $total]);
+            $order->update([
+                'total_amount' => $total
+            ]);
 
             return $order->load('items.product');
         });
     }
 
-  public function cancelOrder(Order $order, $user) {
+    public function cancelOrder(Order $order, $user): Order
+    {
         if ($user->role !== 'client') {
             throw new \Exception("Only clients can cancel orders");
         }
@@ -60,13 +64,17 @@ class OrderService
             throw new \Exception("Order cannot be cancelled");
         }
 
-        foreach ($order->items as $item) {
-            $item->product->increment('stock', $item->quantity);
-        }
+        DB::transaction(function () use ($order) {
 
-        $order->update(['status' => 'cancelled']);
+            foreach ($order->items as $item) {
+                $item->product->increment('stock', $item->quantity);
+            }
+
+            $order->update([
+                'status' => 'cancelled'
+            ]);
+        });
 
         return $order->load('items.product');
     }
 }
-?>

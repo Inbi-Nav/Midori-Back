@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Http\Resources\CategoryResource;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
@@ -13,44 +14,33 @@ class CategoryController extends Controller
         return CategoryResource::collection(Category::all());
     }
 
-    public function show($id)
+    public function show(Category $category)
     {
-        $category = Category::findOrFail($id);
         return new CategoryResource($category);
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
-            'description' => 'nullable|string',
-        ]);
-
-        $category = Category::create(
-            $request->only(['name', 'description'])
-        );
+        $category = Category::create($request->validated());
 
         return (new CategoryResource($category))
             ->response()
             ->setStatusCode(201);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $category = Category::findOrFail($id);
-
-        $category->update(
-            $request->only(['name', 'description'])
-        );
+        $category->update($request->validated());
 
         return new CategoryResource($category);
     }
 
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $category = Category::findOrFail($id);
         $category->delete();
 
-        return response()->json(['message' => 'Category deleted']);
+        return response()->json([
+            'message' => 'Category deleted successfully'
+        ]);
     }
 }

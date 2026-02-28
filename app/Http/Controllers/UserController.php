@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Http\Resources\UserResource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\ChangePasswordRequest;
 
 class UserController extends Controller
 {
@@ -14,65 +17,59 @@ class UserController extends Controller
         return UserResource::collection(User::all());
     }
 
-    public function show($id)
+    public function show(User $user)
     {
-        $user = User::findOrFail($id);
         return new UserResource($user);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $user = User::findOrFail($id);
-
-        $user->update($request->only(['name', 'email', 'role']));
+        $user->update($request->validated());
 
         return new UserResource($user);
     }
 
-    public function me(Request $request)
+    public function updateMe(ProfileUpdateRequest $request)
     {
+        $user = $request->user();
+
+        $user->update($request->validated());
+
+        return new UserResource($user);
+    }
+
+    public function me(Request $request) {
+        
         return new UserResource($request->user());
     }
 
-    public function updateMe(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
         $user = $request->user();
-
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-        ]);
-
-        $user->update($request->only(['name', 'email']));
-
-        return new UserResource($user);
-    }
-
-    public function changePassword(Request $request)
-    {
-        $user = $request->user();
-
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:6|confirmed',
-        ]);
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['message' => 'Current password is incorrect'], 400);
+            return response()->json([
+                'message' => 'Current password is incorrect'
+            ], 400);
         }
 
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return response()->json(['message' => 'Password updated successfully']);
+        return response()->json([
+            'message' => 'Password updated successfully'
+        ]);
     }
 
-    public function destroy($id)
+    public function destroy(User $user, Request $request)
     {
-        $user = User::findOrFail($id);
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Not authorized'], 403);
+        }
+
         $user->delete();
 
-        return response()->json(['message' => 'User deleted']);
+        return response()->json(['message' => 'User deleted successfully']);
     }
 
     public function requestProvider(Request $request)
@@ -80,13 +77,17 @@ class UserController extends Controller
         $user = $request->user();
 
         if ($user->role !== 'client') {
-            return response()->json(['message' => 'Only clients can request to become providers'], 403);
+            return response()->json([
+                'message' => 'Only clients can request to become providers'
+            ], 403);
         }
 
         $user->provider_request = true;
         $user->save();
 
-        return response()->json(['message' => 'Request submitted successfully']);
+        return response()->json([
+            'message' => 'Request submitted successfully'
+        ]);
     }
 
     public function providerRequests()
@@ -96,32 +97,36 @@ class UserController extends Controller
         );
     }
 
-    public function approveProvider($id)
+    public function approveProvider(User $user)
     {
-        $user = User::findOrFail($id);
-
         if (!$user->provider_request) {
-            return response()->json(['message' => 'User has not requested provider role'], 400);
+            return response()->json([
+                'message' => 'User has not requested provider role'
+            ], 400);
         }
 
-        $user->role = 'provider';
-        $user->provider_request = false;
-        $user->save();
+        $user->update([
+            'role' => 'provider',
+            'provider_request' => false
+        ]);
 
         return new UserResource($user);
     }
 
-    public function declineProvider($id)
+    public function declineProvider(User $user)
     {
-        $user = User::findOrFail($id);
-
         if (!$user->provider_request) {
-            return response()->json(['message' => 'No pending request'], 400);
+            return response()->json([
+                'message' => 'No pending request'
+            ], 400);
         }
 
-        $user->provider_request = false;
-        $user->save();
+        $user->update([
+            'provider_request' => false
+        ]);
 
-        return response()->json(['message' => 'Request declined']);
+        return response()->json([
+            'message' => 'Request declined successfully'
+        ]);
     }
 }

@@ -19,7 +19,7 @@ La autenticación se realiza mediante Bearer Tokens (OAuth2).
 
   - Clonar el repositorio:
   - git clone **url-repo**
-  - cd Midori-v2
+  - cd Midori-Back
   - composer install
   - cp .env.example .env
   - php artisan key:generate
