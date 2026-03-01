@@ -5,14 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 class Order extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     public const STATUSES = [
         'pending',
-        'paid',
+        'processing',
         'shipped',
         'delivered',
         'cancelled',
@@ -41,4 +44,8 @@ class Order extends Model
             return $item->price * $item->quantity;
         });
     }
+
+    protected $casts = [
+        'total_amount' => 'decimal:2',
+    ];
 }

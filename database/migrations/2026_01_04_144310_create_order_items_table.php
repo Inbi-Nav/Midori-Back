@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('quantity')->default(0);
             $table->decimal('price', 10, 2);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

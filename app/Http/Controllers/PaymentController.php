@@ -2,64 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Http\Resources\PaymentResource;
+use App\Http\Requests\StorePaymentRequest;
+use App\Http\Requests\UpdatePaymentRequest;
+use Illuminate\Http\Request;
 
+/**
+ * @group Payments
+ */
 class PaymentController extends Controller
 {
-    public function index() {
-        $payments = Payment::all();
-        return response() -> json ($payments);
+    public function index()
+    {
+        return PaymentResource::collection(Payment::all());
     }
 
-    public function show($id) {
-        $payments = Payment::find($id); 
-        if ($payments) {
-            return response() -> json ($payments);
-        } else {
-            return response() -> json (['message' => 'Pago no encontrado'], 404);
-        }
+    public function show(Payment $payment)
+    {
+        return new PaymentResource($payment);
     }
 
-    public function store(Request $request) {
-        $order= Order::where('id', $request->order_id)
-        ->where('user_id', $request->user()->id)
-        ->first();
+    public function store(StorePaymentRequest $request)
+    {
+        $order = Order::where('id', $request->order_id)
+            ->where('user_id', $request->user()->id)
+            ->first();
 
         if (!$order) {
-            return response()->json(['message' => 'Pedido no encontrado'], 404);
+            return response()->json([
+                'message' => 'Order not found'
+            ], 404);
         }
-        $payments = Payment::create([
+
+        $payment = Payment::create([
             'order_id' => $order->id,
             'amount' => $order->calculateTotal(),
             'payment_method' => $request->payment_method,
             'status' => 'paid',
         ]);
-        $order->status = 'paid';
-        $order->total_amount = $payments->amount;
-        $order->save();
 
-        return response()->json($payments, 201);
+        $order->update([
+            'status' => 'processing',
+            'total_amount' => $payment->amount,
+        ]);
+
+        return (new PaymentResource($payment))
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function update (Request $request, $id) {
-        $payments =  Payment::find($id);
-        if ($payments) {
-            $payments -> update($request -> all());
-            return response()-> json ($payments);
-        } else {
-            return response() -> json (['message' => 'Pago no encontrado']);
-        }
+    public function update(UpdatePaymentRequest $request, Payment $payment)
+    {
+        $payment->update($request->validated());
+
+        return new PaymentResource($payment);
     }
 
-    public function destroy ($id) {
-        $payments = Payment::find($id);
-        if ($payments) {
-        $payments-> delete();
-        return response() -> json (['message' => 'Pago eliminado']);
-        } else {
-        return response() -> json (['message' => 'Pago no encontrado'], 404);
+    public function destroy(Payment $payment, Request $request)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Not authorized'], 403);
         }
+
+        $payment->delete();
+
+        return response()->json([
+            'message' => 'Payment deleted successfully'
+        ]);
     }
 }

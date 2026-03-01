@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\OrderItem;
 use Database\Factories\OrderFactory;
+use App\Http\Resources\OrderItemResource;
 use Illuminate\Http\Request;
 
+/**
+ * @group Order Items
+ */
 class OrderItemController extends Controller {
     public function index()
     {
@@ -14,9 +18,6 @@ class OrderItemController extends Controller {
     public function show($id)
     {
         $item = OrderItem::with('product')->find($id);
-        if (!$item) {
-            return response()->json(['message' => 'Item no encontrado'], 404);
-        }
-        return response()->json($item);
+        return new OrderItemResource($item);
     }
 }

@@ -3,27 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     /**
-    * Register a new user
-    *
-    * @unauthenticated
-    *
-    * @bodyParam name string required Nombre del usuario. Example: Juan Perez
-    * @bodyParam email string required Email del usuario. Example: juan@example.com
-    * @bodyParam password string required Contraseña del usuario. Example: 123456
-    */
+     * Register a new user
+     *
+     * @group Authentication
+     * @unauthenticated
+     *
+     * @bodyParam name string required Full name of the user. Example: John Doe
+     * @bodyParam email string required Unique email address. Example: john@example.com
+     * @bodyParam password string required Password (min 8 chars, must contain uppercase, lowercase and number). Example: Password123
+     *
+     * @response 201 {
+     *   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIs...",
+     *   "user": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "john@example.com",
+     *     "role": "client"
+     *   }
+     * }
+     */
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+            ],
         ]);
 
         $user = User::create([
@@ -33,13 +50,11 @@ class AuthController extends Controller
             'role' => 'client',
         ]);
 
-
         if (app()->environment('testing')) {
             $token = 'fake-token';
         } else {
             $token = $user->createToken('authToken')->accessToken;
         }
-
 
         return response()->json([
             'token' => $token,
@@ -48,10 +63,30 @@ class AuthController extends Controller
     }
 
     /**
-    * @unauthenticated
-    */
-
-    public function login(Request $request) {
+     * User Login
+     *
+     * @group Authentication
+     * @unauthenticated
+     *
+     * @bodyParam email string required Registered email address. Example: admin@midori.com
+     * @bodyParam password string required User password. Example: Password123
+     *
+     * @response 200 {
+     *   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIs...",
+     *   "user": {
+     *     "id": 1,
+     *     "name": "Admin",
+     *     "email": "admin@midori.com",
+     *     "role": "admin"
+     *   }
+     * }
+     *
+     * @response 401 {
+     *   "message": "Invalid credentials"
+     * }
+     */
+    public function login(Request $request)
+    {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
@@ -59,7 +94,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Credenciales incorrectas'
+                'message' => 'Invalid credentials'
             ], 401);
         }
 
@@ -69,7 +104,7 @@ class AuthController extends Controller
             $token = 'fake-token';
         } else {
             $token = $user->createToken('login-token')->accessToken;
-        }      
+        }
 
         return response()->json([
             'token' => $token,
@@ -82,10 +117,23 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Logout
+     *
+     * Revokes the current access token and closes the user session.
+     *
+     * @group Authentication
+     *
+     * @response 200 {
+     *   "message": "Session closed"
+     * }
+     */
     public function logout(Request $request)
     {
         $request->user()->token()->revoke();
 
-        return response()->json(['message' => 'Sesión cerrada']);
+        return response()->json([
+            'message' => 'Session closed'
+        ]);
     }
 }

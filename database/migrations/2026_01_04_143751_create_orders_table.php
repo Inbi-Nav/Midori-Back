@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 return new class extends Migration
 {
@@ -19,6 +21,7 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2);
             $table->string('status')->default('pending');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

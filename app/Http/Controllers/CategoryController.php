@@ -2,54 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Http\Resources\CategoryResource;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 
+/**
+ * @group Categories
+ */
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
-        return response()->json($categories);
-    }
-    
-    public function show($id) {
-        $categories = Category::find($id);
-        if ($categories) {
-            return response()->json($categories);
-        } else {
-            return response()->json(['message' => 'Categoria no encontrada'], 404);
-        }
+        return CategoryResource::collection(Category::all());
     }
 
-    public function store(Request $request) {
-        return response()->json(
-            Category::create($request->only([
-                'name', 
-                'description'
-            ])),201);
-    }
-    public function update(Request $request, $id) {
-
-        $categories = Category::find($id);
-
-        if(!$categories) {
-            return response()-> json(['message' => 'Categoria no encontrada', 404]) ;
-        }
-        $categories->update($request->all());
-        return response()-> json($categories);
+    public function show(Category $category)
+    {
+        return new CategoryResource($category);
     }
 
+    public function store(StoreCategoryRequest $request)
+    {
+        $category = Category::create($request->validated());
 
-   public function destroy($id) {
-    
-        $category = Category::find($id);
+        return (new CategoryResource($category))
+            ->response()
+            ->setStatusCode(201);
+    }
 
-        if (!$category) {
-            return response()->json(['message' => 'Categoria no encontrada'], 404);
-        }
+    public function update(UpdateCategoryRequest $request, Category $category)
+    {
+        $category->update($request->validated());
 
+        return new CategoryResource($category);
+    }
+
+    public function destroy(Category $category)
+    {
         $category->delete();
-        return response()->json(['message' => 'Categoria eliminada']);
+
+        return response()->json([
+            'message' => 'Category deleted successfully'
+        ]);
     }
 }
