@@ -10,8 +10,7 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-php artisan migrate --force
-php artisan db:seed --force
+php artisan migrate:fresh --seed --force
 
 echo "App ready."
 
