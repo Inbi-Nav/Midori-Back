@@ -5,18 +5,16 @@ echo "Iniciando Midori Backend..."
 
 php artisan config:clear
 php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
 
 if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
+php artisan vendor:publish --tag=passport-migrations --force
+
 php artisan migrate --force
 
-if [ ! -f storage/oauth-private.key ]; then
-    php artisan passport:install --force
-fi
+php artisan passport:install --force
 
 echo "Aplicación lista."
 
