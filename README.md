@@ -3,20 +3,20 @@
 REST API for the Midori e-commerce management system, built with Laravel 12 + PHP 8.2. Handles users, products, orders, and payments with OAuth2 authentication via Laravel Passport.
 ---
 
-##  Technologies used
+##  Technologies Used
 
 | Category       | Technology                              |
 |----------------|------------------------------------------|
 | Framework      | Laravel 12                               |
 | Language       | PHP 8.2                                  |
-| Database       | SQLite (local) / MySQL 8 (Docker)        |
-| Authentication | Laravel Passport (OAuth2 Bearer Tokens)  |
+| Database       | SQLITE / MySQL  (Docker)                 |
+| Authentication | Laravel Passport                         |
 | Testing        | PHPUnit                                  |
 | API Docs       | Laravel Scribe                           |
 | Containers     | Docker + Docker Compose                  |
 ---
 
-##  Local Setup
+##  Instalation steps
 ```bash
 
 git clone https://github.com/Inbi-Nav/Midori-Back.git
@@ -35,9 +35,29 @@ php artisan serve
 ```bash
 git clone https://github.com/Inbi-Nav/Midori-Back.git
 cd Midori-Back
-docker compose build
-docker compose up
+docker compose up --build
+
+php artisan key:generate
+New-Item database/database.sqlite -ItemType File   
+php artisan migrate:fresh --seed
+php artisan passport:install
 ```
+
+###  Accessing Adminer
+```bash
+
+Adminer is a  database management tool included in the Docker setup. Once containers are running:
+1. Open **http://localhost:8080** in your browser
+2. Fill in the login form:
+| Field    | Value              |
+|----------|--------------------|
+| System   | MySQL              |
+| Server   | `mysql`            |
+| Username | `midori`           |
+| Password | `midori`           |
+| Database | `midori`           |
+```
+
 
 > If you there is OAuth key permission errors:
 > ```bash

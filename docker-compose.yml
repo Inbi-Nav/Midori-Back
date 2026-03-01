@@ -41,6 +41,15 @@ services:
       - midori_network
     command: --default-authentication-plugin=mysql_native_password
 
+  adminer:
+    image: adminer
+    container_name: midori_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - midori_network
+
 networks:
   midori_network:
 
