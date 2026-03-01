@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: midori_app
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      - mysql
+    networks:
+      - midori_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: midori_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - midori_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: midori_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Midori_2026
+      MYSQL_DATABASE: midori
+      MYSQL_USER: midori
+      MYSQL_PASSWORD: Mi2026DoRi
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - midori_network
+
+networks:
+  midori_network:
+
+volumes:
+  mysql_data:
