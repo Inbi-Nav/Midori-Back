@@ -3,6 +3,11 @@ set -e
 
 echo "Iniciando Midori Backend..."
 
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
 if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
