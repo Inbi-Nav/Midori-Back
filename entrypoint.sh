@@ -11,6 +11,7 @@ if [ -z "$APP_KEY" ]; then
 fi
 
 php artisan migrate --force
+php artisan db:seed --force
 
 echo "App ready."
 
