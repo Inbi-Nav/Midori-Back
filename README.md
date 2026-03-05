@@ -39,7 +39,7 @@ docker compose up --build
 
 php artisan key:generate
 New-Item database/database.sqlite -ItemType File   
-php artisan migrate:fresh --seed
+php artisan db:seed
 php artisan passport:install
 ```
 
