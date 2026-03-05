@@ -37,7 +37,7 @@ git clone https://github.com/Inbi-Nav/Midori-Back.git
 cd Midori-Back
 cp .env.production.example .env
 docker compose up --build
-php artisan migrate --seed
+php artisan db:seed
 php artisan passport:install
 ```
 
