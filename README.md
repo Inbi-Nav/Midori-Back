@@ -35,10 +35,8 @@ php artisan serve
 ```bash
 git clone https://github.com/Inbi-Nav/Midori-Back.git
 cd Midori-Back
+cp .env.production.example .env
 docker compose up --build
-
-php artisan key:generate
-New-Item database/database.sqlite -ItemType File   
 php artisan db:seed
 php artisan passport:install
 ```
