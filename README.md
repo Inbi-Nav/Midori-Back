@@ -25,7 +25,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 New-Item database/database.sqlite -ItemType File   
-php artisan migrate:fresh --seed
+php artisan db:seed
 php artisan passport:install
 php artisan passport:client --personal
 php artisan serve
