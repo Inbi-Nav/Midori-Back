@@ -65,6 +65,30 @@ Adminer is a  database management tool included in the Docker setup. Once contai
 
 ---
 
+## Production Deployment (Railway)
+The backend is deployed on **[Railway](https://midori-back-production.up.railway.app/)** for production.
+### Prerequisites
+The repository connected to Railway via GitHub
+-  On every push to main, Railway:
+    - Builds the Docker image using Dockerfile.railway
+    - Runs database migrations automatically
+    - Starts the application on the assigned $PORT
+
+```
+
+Once deployed, the API will be available at:
+https://midori-back-production.up.railway.app/api
+
+```
+ ### Environment Variables
+Production environment variables are configured directly in the Railway dashboard:
+- APP_ENV=production
+- APP_DEBUG=false
+- DB_HOST=mysql.railway.internal
+- DB_DATABASE=railway
+- DB_USERNAME=root
+- DB_PASSWORD=******
+
 ##  Required HTTP Headers
 ```
 Accept: application/json
