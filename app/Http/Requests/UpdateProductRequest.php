@@ -21,13 +21,14 @@ class UpdateProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'sometimes|numeric|min:0',
-            'stock' => 'sometimes|integer|min:0',
-            'material' => 'nullable|string|max:255',
-            'color' => 'nullable|string|max:255',
-        ];
+       return [
+        'name' => 'sometimes|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'sometimes|numeric|min:0',
+        'stock' => 'sometimes|integer|min:0',
+        'material' => 'nullable|string|max:255',
+        'color' => 'nullable|string|max:255',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5048',
+    ];
     }
 }

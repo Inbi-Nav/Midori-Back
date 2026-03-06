@@ -20,10 +20,22 @@ class ProductController extends Controller
         return new ProductResource($product);
     }
 
-    public function store(StoreProductRequest $request)
-    {
+    public function store(StoreProductRequest $request) {
+        $data = $request->validated();
+
+        if ($request->file('image')) {
+
+            $file = $request->file('image');
+
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path('images/products'), $filename);
+
+            $data['image_url'] = 'images/products/' . $filename;
+        }
+
         $product = Product::create([
-            ...$request->validated(),
+            ...$data,
             'user_id' => $request->user()->id,
         ]);
 
@@ -31,16 +43,28 @@ class ProductController extends Controller
             ->response()
             ->setStatusCode(201);
     }
-
-    public function update(UpdateProductRequest $request, Product $product)
-    {
+    
+    public function update(UpdateProductRequest $request, Product $product) {
         $user = $request->user();
 
         if ($product->user_id !== $user->id && $user->role !== 'admin') {
             return response()->json(['message' => 'Not authorized'], 403);
         }
 
-        $product->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->file('image')) {
+
+            $file = $request->file('image');
+
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path('images/products'), $filename);
+
+            $data['image_url'] = 'images/products/' . $filename;
+        }
+
+        $product->update($data);
 
         return new ProductResource($product);
     }
