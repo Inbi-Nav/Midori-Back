@@ -22,7 +22,9 @@ class ProductResource extends JsonResource
             'stock' => $this->stock,
             'material' => $this->material,
             'color' => $this->color,
-            'image_url' => $this->image_url,
+            'image_url' => $this->image_url
+            ? asset('images/products/' . $this->image_url)
+            : null,
             'category_id' => $this->category_id,
         ];
     }
