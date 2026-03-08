@@ -102,9 +102,25 @@ class OrderController extends Controller
         }
     }
 
-    public function destroy(Order $order)
-    {
+    public function destroy(Request $request, Order $order) {
+        $user = $request->user();
+
+        if ($user->role !== 'provider') {
+            return response()->json([
+                'message' => 'Not authorized'
+            ], 403);
+        }
+
+        if (!in_array($order->status, ['delivered','cancelled'])) {
+            return response()->json([
+                'message' => 'Only finalized orders can be removed'
+            ], 400);
+        }
+
         $order->delete();
-        return response()->json(['message' => 'Order deleted']);
+
+        return response()->json([
+            'message' => 'Order deleted'
+        ]);
     }
 }
