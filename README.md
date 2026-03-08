@@ -30,6 +30,8 @@ php artisan passport:install
 php artisan passport:client --personal
 php artisan serve
 ```
+***Use the `main` branch to view the project.***
+
 ---
 ##  Docker Setup
 ```bash
