@@ -63,15 +63,32 @@ class UserController extends Controller
         ]);
     }
 
-    public function destroy(User $user, Request $request)
-    {
-        if ($request->user()->role !== 'admin') {
-            return response()->json(['message' => 'Not authorized'], 403);
+   public function destroy(User $user, Request $request) {
+        $authUser = $request->user();
+
+        if ($authUser->role !== 'admin') {
+            return response()->json([
+                'message' => 'Not authorized'
+            ], 403);
+        }
+
+        if ($user->id === $authUser->id) {
+            return response()->json([
+                'message' => 'You cannot delete your own account'
+            ], 403);
+        }
+
+        if ($user->role === 'admin') {
+            return response()->json([
+                'message' => 'Admin users cannot be deleted'
+            ], 403);
         }
 
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully']);
+        return response()->json([
+            'message' => 'User deleted successfully'
+        ]);
     }
 
     public function requestProvider(Request $request)

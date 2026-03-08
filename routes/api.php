@@ -44,6 +44,7 @@ Route::middleware('auth:api')->group(function () {
 
         Route::get('/orders', [OrderController::class, 'index']);
         Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+        Route::delete('/orders/{order}', [OrderController::class, 'destroy']);
 
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{category}', [CategoryController::class, 'update']);

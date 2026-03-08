@@ -43,4 +43,49 @@ class AdminApiTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_admin_can_delete_client_user() {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+
+        Passport::actingAs($admin);
+
+        $response = $this->deleteJson("/api/users/{$client->id}");
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('users', [
+            'id' => $client->id
+        ]);
+    }
+
+
+    public function test_admin_cannot_delete_themselves() {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        Passport::actingAs($admin);
+
+        $response = $this->deleteJson("/api/users/{$admin->id}");
+
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $admin->id
+        ]);
+    }
+
+    public function test_client_cannot_delete_users()  {
+        $client = User::factory()->create(['role' => 'client']);
+        $otherUser = User::factory()->create(['role' => 'client']);
+
+        Passport::actingAs($client);
+
+        $response = $this->deleteJson("/api/users/{$otherUser->id}");
+
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $otherUser->id
+        ]);
+    }
 }
