@@ -19,7 +19,7 @@ if [ ! -f /var/www/storage/oauth-private.key ]; then
 fi
 
 chmod 600 /var/www/storage/oauth-private.key
-chmod 644 /var/www/storage/oauth-public.key
+chmod 600 /var/www/storage/oauth-public.key
 
 echo "App ready."
 
